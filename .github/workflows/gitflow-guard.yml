@@ -1,0 +1,52 @@
+name: Gitflow Guard
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [develop, master, 'release/*']   # cambia master→main si usás main
+  push:
+    branches: ['**']                           # vigila cualquier push (bloquea directos a develop/master)
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch naming + targets
+        shell: bash
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          BASE="${GITHUB_BASE_REF:-}"
+
+          echo "Branch: $BRANCH"
+          echo "Base:   $BASE"
+
+          # 1) Nombres permitidos
+          if [[ ! "$BRANCH" =~ ^(develop|master|main|feature\/[a-z0-9._-]+|fix\/[a-z0-9._-]+|hotfix\/[a-z0-9._-]+|backport\/[a-z0-9._-]+|release\/([0-9]+\.[0-9]+\.[0-9]+))$ ]]; then
+            echo "❌ Nombre de rama inválido: $BRANCH"
+            echo "   Permitidos: develop, master|main, feature/*, fix/*, hotfix/*, backport/*, release/x.y.z"
+            exit 1
+          fi
+
+          # 2) Bloquear push directo a ramas protegidas
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && ( "$BRANCH" == "develop" || "$BRANCH" == "master" || "$BRANCH" == "main" ) ]]; then
+            echo "❌ Push directo a $BRANCH bloqueado. Abrí un Pull Request."
+            exit 1
+          fi
+
+          # 3) Validar combinaciones (solo en PR)
+          if [[ -n "$BASE" ]]; then
+            case "$BRANCH" in
+              feature/*)
+                [[ "$BASE" == "develop" ]] || { echo "❌ feature/* debe ir a develop"; exit 1; } ;;
+              hotfix/*)
+                [[ "$BASE" == "master" || "$BASE" == "main" ]] || { echo "❌ hotfix/* debe ir a master/main"; exit 1; } ;;
+              fix/*)
+                [[ "$BASE" == release/* ]] || { echo "❌ fix/* debe ir a release/*"; exit 1; } ;;
+              release/*)
+                [[ "$BASE" == "master" || "$BASE" == "main" ]] || { echo "❌ release/* debe ir a master/main"; exit 1; } ;;
+              backport/*)
+                [[ "$BASE" == "develop" || "$BASE" == release/* ]] || { echo "❌ backport/* debe ir a develop o release/*"; exit 1; } ;;
+            esac
+          fi
+
+          echo "✅ Gitflow OK"
