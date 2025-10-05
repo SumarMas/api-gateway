@@ -68,6 +68,38 @@ management:
       export:
         enabled: true
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        minimumNumberOfCalls: 5
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 100
+    instances:
+      authCircuitBreaker:
+        baseConfig: default
+      userCircuitBreaker:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        cancelRunningFuture: true
+        timeoutDuration: 5s   # 🔹 aumentamos de 1s a 5s
+    instances:
+      authCircuitBreaker:
+        baseConfig: default
+      userCircuitBreaker:
+        baseConfig: default
+
+
 security:
   jwt:
     issuer: api-gateway
