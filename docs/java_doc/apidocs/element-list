@@ -1,0 +1,6 @@
+com.platform.api_gateway
+com.platform.api_gateway.configs
+com.platform.api_gateway.dtos
+com.platform.api_gateway.fallback
+com.platform.api_gateway.filters
+com.platform.api_gateway.util
