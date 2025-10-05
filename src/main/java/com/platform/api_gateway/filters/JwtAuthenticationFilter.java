@@ -23,6 +23,7 @@ import java.util.UUID;
  * Routes under /auth/** or user registration are excluded.
  */
 @Component
+@SuppressWarnings("PMD.AtLeastOneConstructor")
 public class JwtAuthenticationFilter implements WebFilter {
 
     /** Secret key used for signing and verifying JWT tokens. */
