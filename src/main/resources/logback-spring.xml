@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+
+    <!-- Define pattern with traceId, spanId and X-Request-Id -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%highlight(%-5level)] [%X{traceId:-no-trace}] [%X{spanId:-no-span}] [%X{X-Request-Id:-no-req}] %cyan(%logger{36}) - %msg%n"/>
+
+    <!-- Console appender -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logging -->
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+    </root>
+
+    <!-- Enable more verbose logs for Gateway -->
+    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
+    <logger name="reactor.netty.http.client" level="WARN"/>
+    <logger name="reactor.netty.http.server" level="WARN"/>
+
+</configuration>

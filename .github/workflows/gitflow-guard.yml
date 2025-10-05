@@ -3,9 +3,13 @@ name: Gitflow Guard
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
-    branches: [develop, master, 'release/*']   # cambia master→main si usás main
+    branches: [develop, master, main, 'release/*']
   push:
-    branches: ['**']                           # vigila cualquier push (bloquea directos a develop/master)
+    branches-ignore:   # Ignora pushes en ramas protegidas
+      - develop
+      - master
+      - main
+      - 'release/*'
 
 jobs:
   guard:
@@ -16,7 +20,6 @@ jobs:
         run: |
           BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
           BASE="${GITHUB_BASE_REF:-}"
-
           echo "Branch: $BRANCH"
           echo "Base:   $BASE"
 
@@ -27,13 +30,7 @@ jobs:
             exit 1
           fi
 
-          # 2) Bloquear push directo a ramas protegidas
-          if [[ "${GITHUB_EVENT_NAME}" == "push" && ( "$BRANCH" == "develop" || "$BRANCH" == "master" || "$BRANCH" == "main" ) ]]; then
-            echo "❌ Push directo a $BRANCH bloqueado. Abrí un Pull Request."
-            exit 1
-          fi
-
-          # 3) Validar combinaciones (solo en PR)
+          # 2) Validar combinaciones (solo en PR)
           if [[ -n "$BASE" ]]; then
             case "$BRANCH" in
               feature/*)

@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.platform.api_gateway"},{"l":"com.platform.api_gateway.configs"},{"l":"com.platform.api_gateway.dtos"},{"l":"com.platform.api_gateway.fallback"},{"l":"com.platform.api_gateway.filters"},{"l":"com.platform.api_gateway.util"}];updateSearchResults();
