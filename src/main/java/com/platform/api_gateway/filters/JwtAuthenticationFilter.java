@@ -4,6 +4,7 @@ package com.platform.api_gateway.filters;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -49,6 +50,10 @@ public class JwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var path = exchange.getRequest().getURI().getPath();
 
+        // Allow preflight requests to pass through
+        if (HttpMethod.OPTIONS.equals(exchange.getRequest().getMethod())) {
+            return chain.filter(exchange);
+        }
         // Public routes (login, register)
         if (path.startsWith(AUTH) || REGISTER.equals(path)) {
             // ensure X-Request-Id exists for public endpoints too
