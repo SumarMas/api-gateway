@@ -6,6 +6,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 /**
  * Global CORS configuration for the API Gateway.
  * Allows cross-origin requests from all sources.
@@ -21,10 +23,28 @@ public class CorsGlobalConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*"); // allow all origins
-        config.addAllowedMethod("*");        // allow all HTTP methods
-        config.addAllowedHeader("*");        // allow all headers
-        config.setAllowCredentials(true);    // allow credentials
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://sumar-mas.dynns.com:*",
+                "https://sumar-mas.dynns.com"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Roles",
+                "X-Request-Id"
+        ));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of(
+                "X-Request-Id",
+                "fileName",
+                "uuid",
+                "sha256",
+                "mimeType",
+                "extension"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
