@@ -40,6 +40,17 @@ spring:
                     name: userCircuitBreaker
                     fallbackUri: forward:/fallback/users-service
 
+            - id: media-service
+              uri: lb://media-service
+              predicates:
+                - Path=/media/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: mediaCircuitBreaker
+                    fallbackUri: forward:/fallback/media-service
+
 eureka:
   client:
     serviceUrl:
@@ -86,6 +97,8 @@ resilience4j:
       authCircuitBreaker:
         baseConfig: default
       userCircuitBreaker:
+        baseConfig: default
+      mediaCircuitBreaker:
         baseConfig: default
 
   timelimiter:
