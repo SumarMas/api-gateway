@@ -51,6 +51,17 @@ spring:
                     name: mediaCircuitBreaker
                     fallbackUri: forward:/fallback/media-service
 
+            - id: campaign-service
+              uri: lb://campaign-service
+              predicates:
+                - Path=/campaigns/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: campaignCircuitBreaker
+                    fallbackUri: forward:/fallback/campaign-service
+
 eureka:
   client:
     serviceUrl:
@@ -100,6 +111,8 @@ resilience4j:
         baseConfig: default
       mediaCircuitBreaker:
         baseConfig: default
+      campaignCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:
@@ -110,6 +123,10 @@ resilience4j:
       authCircuitBreaker:
         baseConfig: default
       userCircuitBreaker:
+        baseConfig: default
+      mediaCircuitBreaker:
+        baseConfig: default
+      campaignCircuitBreaker:
         baseConfig: default
 
 
