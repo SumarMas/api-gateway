@@ -62,6 +62,17 @@ spring:
                     name: campaignCircuitBreaker
                     fallbackUri: forward:/fallback/campaign-service
 
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/notifications/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: notificationCircuitBreaker
+                    fallbackUri: forward:/fallback/notification-service
+
 eureka:
   client:
     serviceUrl:
@@ -113,6 +124,8 @@ resilience4j:
         baseConfig: default
       campaignCircuitBreaker:
         baseConfig: default
+      notificationCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:
@@ -127,6 +140,8 @@ resilience4j:
       mediaCircuitBreaker:
         baseConfig: default
       campaignCircuitBreaker:
+        baseConfig: default
+      notificationCircuitBreaker:
         baseConfig: default
 
 
