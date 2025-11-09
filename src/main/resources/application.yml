@@ -6,7 +6,6 @@ spring:
     name: api-gateway
   main:
     web-application-type: reactive
-
   cloud:
     gateway:
       server:
@@ -72,6 +71,16 @@ spring:
                   args:
                     name: notificationCircuitBreaker
                     fallbackUri: forward:/fallback/notification-service
+          httpclient:
+            max-header-size: 16384 # 16 KB
+            max-initial-line-length: 16384 # 16 KB
+            response-timeout: 30s
+  webflux:
+    multipart:
+      max-in-memory-size: 10MB
+  http:
+    codecs:
+      max-in-memory-size: ${MAX_FILE_SIZE:50MB}
 
 eureka:
   client:
