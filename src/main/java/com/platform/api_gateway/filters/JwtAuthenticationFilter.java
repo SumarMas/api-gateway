@@ -35,15 +35,20 @@ public class JwtAuthenticationFilter implements WebFilter {
     /** Secret key used for signing and verifying JWT tokens. */
     @Value("${security.jwt.secret}")
     private String jwtSecret;
-
-    /** Identifier for auth service requests. */
-    private static final String AUTH_SERVICE = "auth-service";
-    /** Path prefix for authentication-related routes. */
-    private static final String AUTH = "/auth/";
-    /** Path for user registration endpoint. */
-    private static final String REGISTER = "/users/api/v1/users/register";
     /** Path matcher for matching request paths. */
-    private static final AntPathMatcher PATH_MATCHER  = new AntPathMatcher();
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+    /** List of public route patterns that do not require authentication. */
+    private static final List<String> PUBLIC_PATTERNS = List.of(
+            "/auth/**",                                           // login / register auth
+            "/users/api/v1/users/register",                       // register
+            "/users/api/v1/ngos/all-approved",                    // list approved NGOs
+            "/users/api/v1/ngos/{ngoId}",                         // NGO detail
+            "/campaigns/api/v1/campaigns/filter",                 // campaign filter
+            "/campaigns/api/v1/campaigns/{campaignId}",           // campaign detail
+            "/campaigns/api/v1/categories/all",                   // list categories
+            "/campaigns/api/v1/comments/{campaignId}",            // campaign comments
+            "/campaigns/api/v1/message-campaigns/{campaignId}"    // campaign messages
+    );
 
     /**
      * Filters incoming requests to validate JWT tokens
@@ -164,7 +169,8 @@ public class JwtAuthenticationFilter implements WebFilter {
         return response.writeWith(Mono.just(buffer));
     }
 
-    /** Checks if the request is an internal service request.
+    /**
+     * Checks if the request is an internal service request.
      *
      * @param exchange the current server exchange
      * @return true if the request is from an internal service, false otherwise
@@ -181,18 +187,6 @@ public class JwtAuthenticationFilter implements WebFilter {
      * @return true if the path is public, false otherwise
      */
     private boolean isPublicRoute(String path) {
-        List<String> publicPatterns = List.of(
-                "/auth/**",                                           // login / register auth
-                "/users/api/v1/users/register",                       // register
-                "/users/api/v1/ngos/all-approved",                    // list approved NGOs
-                "/users/api/v1/ngos/{ngoId}",                         // NGO detail
-                "/campaigns/api/v1/campaigns/filter",                 // campaign filter
-                "/campaigns/api/v1/campaigns/{campaignId}",           // campaign detail
-                "/campaigns/api/v1/categories/all",                   // list categories
-                "/campaigns/api/v1/comments/{campaignId}",            // campaign comments
-                "/campaigns/api/v1/message-campaigns/{campaignId}"    // campaign messages
-        );
-
-        return publicPatterns.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
+        return PUBLIC_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
     }
 }
