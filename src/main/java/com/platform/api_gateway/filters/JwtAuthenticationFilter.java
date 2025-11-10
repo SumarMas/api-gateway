@@ -22,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Reactive filter that validates JWT tokens and propagates user context headers.
@@ -37,19 +38,27 @@ public class JwtAuthenticationFilter implements WebFilter {
     private String jwtSecret;
     /** Path matcher for matching request paths. */
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-    /** List of public route patterns that do not require authentication. */
+    /** Public routes that don’t require any token. */
     private static final List<String> PUBLIC_PATTERNS = List.of(
-            "/auth/**",                                           // login / register auth
-            "/users/api/v1/users/register",                       // register
-            "/users/api/v1/ngos/all-approved",                    // list approved NGOs
-            "/users/api/v1/ngos/{ngoId}",                         // NGO detail
-            "/campaigns/api/v1/campaigns/filter",                 // campaign filter
-            "/campaigns/api/v1/campaigns/{campaignId}",           // campaign detail
-            "/campaigns/api/v1/categories/all",                   // list categories
-            "/campaigns/api/v1/comments/{campaignId}",            // campaign comments
-            "/campaigns/api/v1/message-campaigns/{campaignId}"    // campaign messages
+            "/auth/**",
+            "/users/api/v1/users/register",
+            "/users/api/v1/ngos/all-approved",
+            "/campaigns/api/v1/campaigns/filter",
+            "/campaigns/api/v1/categories/all"
     );
 
+    /** Public routes that must contain a valid UUID in the path. */
+    private static final List<String> PUBLIC_REGEX_PATTERNS = List.of(
+            "/users/api/v1/ngos/",
+            "/campaigns/api/v1/campaigns/",
+            "/campaigns/api/v1/comments/",
+            "/campaigns/api/v1/message-campaigns/"
+    );
+
+    /** UUID regex (RFC4122, case-insensitive). */
+    private static final Pattern UUID_REGEX =
+            Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]"
+                    + "{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$");
     /**
      * Filters incoming requests to validate JWT tokens
      * and propagate user context headers.
@@ -67,14 +76,14 @@ public class JwtAuthenticationFilter implements WebFilter {
             return chain.filter(exchange);
         }
         // Public routes (login, register, view campaigns/NGOs)
-        if (isPublicRoute(path)) {
-            log.debug("Is public route: {}", path);
+        if (isPublicRoute(path) || isPublicRouteRegex(path)) {
+            log.info("Is public route: {}", path);
             return chain.filter(ensureRequestId(exchange));
         }
 
         // Allow internal service requests to pass through
         if (isInternalRequest(exchange)) {
-            log.debug("Is internal request: {}", path);
+            log.info("Is internal request: {}", path);
             return chain.filter(ensureRequestId(exchange));
         }
 
@@ -181,12 +190,28 @@ public class JwtAuthenticationFilter implements WebFilter {
         return Objects.nonNull(internalHeader) && !internalHeader.isBlank();
     }
 
-    /*  Checks if the request path matches any public route patterns.
+    /**
+     * Checks if the request path matches any public route patterns.
      *
      * @param path the request path
      * @return true if the path is public, false otherwise
      */
     private boolean isPublicRoute(String path) {
         return PUBLIC_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
+    }
+
+    /**
+     * Regex-based path match for UUID-dependent routes.
+     * @param path the request path
+     * @return true if the path matches a public regex route, false otherwise
+     */
+    private boolean isPublicRouteRegex(String path) {
+        return PUBLIC_REGEX_PATTERNS.stream().anyMatch(prefix -> {
+            if (path.startsWith(prefix)) {
+                String lastSegment = path.substring(prefix.length());
+                return UUID_REGEX.matcher(lastSegment).matches();
+            }
+            return false;
+        });
     }
 }
