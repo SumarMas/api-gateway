@@ -52,7 +52,9 @@ public class JwtAuthenticationFilter implements WebFilter {
             "/users/api/v1/ngos/",
             "/campaigns/api/v1/campaigns/",
             "/campaigns/api/v1/comments/",
-            "/campaigns/api/v1/message-campaigns/"
+            "/campaigns/api/v1/message-campaigns/",
+            "/media/api/v1/media/getFile/",
+            "/media/api/v1/media/getFileBase64/"
     );
 
     /** UUID regex (RFC4122, case-insensitive). */
