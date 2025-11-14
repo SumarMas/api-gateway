@@ -71,6 +71,17 @@ spring:
                   args:
                     name: notificationCircuitBreaker
                     fallbackUri: forward:/fallback/notification-service
+
+            - id: donation-service
+              uri: lb://donation-service
+              predicates:
+                - Path=/donations/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: donationCircuitBreaker
+                    fallbackUri: forward:/fallback/donation-service
           httpclient:
             max-header-size: 16384 # 16 KB
             max-initial-line-length: 16384 # 16 KB
@@ -135,6 +146,8 @@ resilience4j:
         baseConfig: default
       notificationCircuitBreaker:
         baseConfig: default
+      donationCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:
@@ -151,6 +164,8 @@ resilience4j:
       campaignCircuitBreaker:
         baseConfig: default
       notificationCircuitBreaker:
+        baseConfig: default
+      donationCircuitBreaker:
         baseConfig: default
 
 
