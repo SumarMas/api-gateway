@@ -121,7 +121,7 @@ spring:
                 - StripPrefix=1
                 - name: CircuitBreaker
                   args:
-                    name: donationCircuitBreaker
+                    name: payoutCircuitBreaker
                     fallbackUri: forward:/fallback/payout-service
                 - name: Retry
                   args:
@@ -205,7 +205,7 @@ resilience4j:
     configs:
       default:
         cancelRunningFuture: true
-        timeoutDuration: 10s   # 🔹 aumentamos de 1s a 5s
+        timeoutDuration: 10s   # 🔹 aumentamos de 1s a 10s
     instances:
       authCircuitBreaker:
         baseConfig: default
