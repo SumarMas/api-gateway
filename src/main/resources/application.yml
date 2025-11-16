@@ -27,6 +27,11 @@ spring:
                   args:
                     name: authCircuitBreaker
                     fallbackUri: forward:/fallback/auth-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
 
             - id: user-service
               uri: lb://user-service
@@ -38,6 +43,11 @@ spring:
                   args:
                     name: userCircuitBreaker
                     fallbackUri: forward:/fallback/users-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
 
             - id: media-service
               uri: lb://media-service
@@ -49,6 +59,11 @@ spring:
                   args:
                     name: mediaCircuitBreaker
                     fallbackUri: forward:/fallback/media-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
 
             - id: campaign-service
               uri: lb://campaign-service
@@ -60,6 +75,11 @@ spring:
                   args:
                     name: campaignCircuitBreaker
                     fallbackUri: forward:/fallback/campaign-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
 
             - id: notification-service
               uri: lb://notification-service
@@ -71,6 +91,11 @@ spring:
                   args:
                     name: notificationCircuitBreaker
                     fallbackUri: forward:/fallback/notification-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
 
             - id: donation-service
               uri: lb://donation-service
@@ -82,6 +107,27 @@ spring:
                   args:
                     name: donationCircuitBreaker
                     fallbackUri: forward:/fallback/donation-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
+
+            - id: payout-service
+              uri: lb://payout-service
+              predicates:
+                - Path=/payouts/**
+              filters:
+                - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: payoutCircuitBreaker
+                    fallbackUri: forward:/fallback/payout-service
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, GATEWAY_TIMEOUT, SERVICE_UNAVAILABLE
+                    methods: GET, POST, PUT
           httpclient:
             max-header-size: 16384 # 16 KB
             max-initial-line-length: 16384 # 16 KB
@@ -95,8 +141,12 @@ spring:
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:9061/eureka/}
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
 
 management:
   endpoints:
@@ -128,7 +178,7 @@ resilience4j:
         registerHealthIndicator: true
         slidingWindowType: COUNT_BASED
         slidingWindowSize: 10
-        failureRateThreshold: 50
+        failureRateThreshold: 70
         waitDurationInOpenState: 5s
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
@@ -148,12 +198,14 @@ resilience4j:
         baseConfig: default
       donationCircuitBreaker:
         baseConfig: default
+      payoutCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:
       default:
         cancelRunningFuture: true
-        timeoutDuration: 5s   # 🔹 aumentamos de 1s a 5s
+        timeoutDuration: 10s   # 🔹 aumentamos de 1s a 10s
     instances:
       authCircuitBreaker:
         baseConfig: default
@@ -166,6 +218,8 @@ resilience4j:
       notificationCircuitBreaker:
         baseConfig: default
       donationCircuitBreaker:
+        baseConfig: default
+      payoutCircuitBreaker:
         baseConfig: default
 
 
