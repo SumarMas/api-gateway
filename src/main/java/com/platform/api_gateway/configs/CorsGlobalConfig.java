@@ -28,7 +28,7 @@ public class CorsGlobalConfig {
                 "http://sumar-mas.dynns.com:*",
                 "https://sumar-mas.dynns.com"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type",
